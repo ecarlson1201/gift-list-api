@@ -14,12 +14,12 @@ const giftSchema = mongoose.Schema({
 
 const listSchema = mongoose.Schema({
     title: { type: String, required: true },
-    list: [{ type: mongoose.Schema.Types.ObjectId, ref: Gift }]
+    list: [{ type: mongoose.Schema.Types.ObjectId, ref: "Gift" }]
 });
 
 const accountSchema = mongoose.Schema({
     user: mongoose.Schema.Types.ObjectId,
-    data: [{ type: mongoose.Schema.Types.ObjectId, ref: List }]
+    data: [{ type: mongoose.Schema.Types.ObjectId, ref: "List" }]
 });
 
 const Gift = mongoose.model('Gift', giftSchema);
