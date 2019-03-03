@@ -14,8 +14,6 @@ const { localStrategy, jwtStrategy } = require('../auth/strategies');
 passport.use(localStrategy);
 passport.use(jwtStrategy);
 
-const jwtAuth = passport.authenticate('jwt', { session: false });
-
 router.get('/:userId', (req, res) => {
     const user = req.params.userId;
     Account
@@ -109,11 +107,14 @@ router.delete('/lists/:userId', jsonParser, (req, res) => {
             Account
                 .findOne({ user: user })
                 .then(account => {
-                    console.log(account.lists)
-                    let newLists = arrayRemove(account.lists, toBeDeleted)
-                    console.log(newLists)
+                    let newLists = account.lists.reduce((acc, val, index) => {
+                        if(JSON.stringify(account.lists[index]) !== toBeDeleted){
+                            acc.splice(account.lists[index], 1)
+                        };
+                        return acc
+                    }, account.lists)
                     Account.findByIdAndUpdate(account.id, { lists: newLists })
-                        .then(response => { res.status(204).json({ messag: "List Deletion successful" }) })
+                        .then(response => { res.status(204).json({ message: "List seletion successful" }) })
                 })
         })
         .catch(err => { res.status(500).json({ error: "something went terribly wrong deleting a list" }) });
