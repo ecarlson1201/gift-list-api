@@ -14,7 +14,7 @@ const { localStrategy, jwtStrategy } = require('../auth/strategies');
 passport.use(localStrategy);
 passport.use(jwtStrategy);
 
-router.get('/:userId', (req, res) => {
+router.get('/lists/:userId', (req, res) => {
     const user = req.params.userId;
     Account
         .findOne({ user: user })
@@ -108,8 +108,8 @@ router.delete('/lists/:userId', jsonParser, (req, res) => {
                 .findOne({ user: user })
                 .then(account => {
                     let newLists = account.lists.reduce((acc, val, index) => {
-                        if(JSON.stringify(account.lists[index]) !== toBeDeleted){
-                            acc.splice(account.lists[index], 1)
+                        if(account.lists[index] == toBeDeleted){
+                            account.lists.splice(index, 1)
                         };
                         return acc
                     }, account.lists)
