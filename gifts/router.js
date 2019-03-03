@@ -62,7 +62,6 @@ router.post('/gifts', jsonParser, (req, res) => {
 router.post('/lists/:userId', jsonParser, (req, res) => {
     const requiredFields = 'title';
     const user = req.params.userId;
-    console.log('hello')
 
     let newList = {
         title: req.body.title,
@@ -94,11 +93,29 @@ router.post('/lists/:userId', jsonParser, (req, res) => {
         })
 });
 
-router.delete('/lists', jsonParser, (req, res) => {
-    let toBeDeleted = req.body;
+router.delete('/lists/:userId', jsonParser, (req, res) => {
+    let toBeDeleted = req.body._id;
+    const user = req.params.userId;
+
+    function arrayRemove(arr, value) {
+        return arr.filter(function (ele, index) {
+            return index !== value;
+        });
+    };
 
     List
-        .remove({ _id: { $in: toBeDeleted }, }, () => { res.status(204).json({ message: "List deletion successful" }).end() })
+        .deleteOne({ _id: { $in: toBeDeleted } })
+        .then((list) => {
+            Account
+                .findOne({ user: user })
+                .then(account => {
+                    console.log(account.lists)
+                    let newLists = arrayRemove(account.lists, toBeDeleted)
+                    console.log(newLists)
+                    Account.findByIdAndUpdate(account.id, { lists: newLists })
+                        .then(response => { res.status(204).json({ messag: "List Deletion successful" }) })
+                })
+        })
         .catch(err => { res.status(500).json({ error: "something went terribly wrong deleting a list" }) });
 });
 
@@ -107,7 +124,7 @@ router.put('/lists', jsonParser, (req, res) => {
 
     List
         .findOneAndUpdate({ _id: req.body._id }, { $set: updatedGifts })
-        .then(response => { res.status(200).json({message: "updated gift list"}) })
-        .catch(err => res.status(500).json({message: "Something went horribly wrong updating the gift list"}));
+        .then(response => { res.status(200).json({ message: "updated gift list" }) })
+        .catch(err => res.status(500).json({ message: "Something went horribly wrong updating the gift list" }));
 });
 module.exports = { router };
