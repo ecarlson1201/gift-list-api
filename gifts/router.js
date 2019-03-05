@@ -3,6 +3,7 @@
 const express = require('express');
 const passport = require('passport');
 const router = express.Router();
+const { User } = require('../user/models')
 
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
@@ -14,15 +15,20 @@ const { localStrategy, jwtStrategy } = require('../auth/strategies');
 passport.use(localStrategy);
 passport.use(jwtStrategy);
 
-router.get('/lists/:userId', (req, res) => {
-    const user = req.params.userId;
-    Account
-        .findOne({ user: user })
-        .then(session => res.json(session))
-        .catch(err => {
-            console.error(err);
-            res.status(500).json({ error: 'Something went wrong' });
-        });
+const jwtAuth = passport.authenticate('jwt', { session: false });
+
+router.get('/lists/protected', jwtAuth, (req, res) => {
+    const username = req.user.username
+    User.findOne({ username: username })
+        .then(user => {
+            Account
+                .findOne({ user: user._id })
+                .then(session => res.json(session))
+                .catch(err => {
+                    console.error(err);
+                    res.status(500).json({ error: 'Something went wrong' });
+                });
+        })
 });
 
 router.post('/gifts', jsonParser, (req, res) => {
@@ -57,9 +63,9 @@ router.post('/gifts', jsonParser, (req, res) => {
         });
 });
 
-router.post('/lists/:userId', jsonParser, (req, res) => {
+router.post('/lists/protected', jwtAuth, jsonParser, (req, res) => {
     const requiredFields = 'title';
-    const user = req.params.userId;
+    const username = req.user.username
 
     let newList = {
         title: req.body.title,
@@ -72,59 +78,61 @@ router.post('/lists/:userId', jsonParser, (req, res) => {
         return res.status(400).send(message)
     };
 
-    List
-        .create(newList)
-        .then((list) => {
-            newList = list;
-            return Account.findOne({ user: user });
-        })
-        .then((account) => {
-            account.lists.push(newList);
-            return account.save(function () { });
-        })
-        .then((savedAccount) => {
-            res.status(201).json(newList)
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).json({ error: 'something went horribly wrong' });
-        })
-});
-
-router.delete('/lists/:userId', jsonParser, (req, res) => {
-    let toBeDeleted = req.body._id;
-    const user = req.params.userId;
-
-    function arrayRemove(arr, value) {
-        return arr.filter(function (ele, index) {
-            return index !== value;
-        });
-    };
-
-    List
-        .deleteOne({ _id: { $in: toBeDeleted } })
-        .then((list) => {
-            Account
-                .findOne({ user: user })
-                .then(account => {
-                    let newLists = account.lists.reduce((acc, val, index) => {
-                        if(account.lists[index] == toBeDeleted){
-                            account.lists.splice(index, 1)
-                        };
-                        return acc
-                    }, account.lists)
-                    Account.findByIdAndUpdate(account.id, { lists: newLists })
-                        .then(response => { res.status(204).json({ message: "List seletion successful" }) })
+    User.findOne({ username: username })
+        .then(user => {
+            List
+                .create(newList)
+                .then((list) => {
+                    newList = list;
+                    return Account.findOne({ user: user._id });
+                })
+                .then((account) => {
+                    account.lists.push(newList);
+                    return account.save(function () { });
+                })
+                .then((savedAccount) => {
+                    res.status(201).json(newList)
+                })
+                .catch(err => {
+                    console.error(err);
+                    res.status(500).json({ error: 'something went horribly wrong' });
                 })
         })
-        .catch(err => { res.status(500).json({ error: "something went terribly wrong deleting a list" }) });
 });
 
-router.put('/lists', jsonParser, (req, res) => {
-    let updatedGifts = { gifts: req.body.gifts }
+router.delete('/lists/protected', jwtAuth, jsonParser, (req, res) => {
+    let toBeDeleted = req.body._id;
+    const username = req.user.username
+
+    User.findOne({ username: username })
+        .then(user => {
+            List
+                .deleteOne({ _id: { $in: toBeDeleted } })
+                .then((list) => {
+                    Account
+                        .findOne({ user: user._id })
+                        .then(account => {
+                            let newLists = account.lists.reduce((acc, val, index) => {
+                                if (account.lists[index] == toBeDeleted) {
+                                    account.lists.splice(index, 1)
+                                };
+                                return acc
+                            }, account.lists)
+                            Account.findByIdAndUpdate(account.id, { lists: newLists })
+                                .then(response => { res.status(204).json({ message: "List seletion successful" }) })
+                        })
+                })
+                .catch(err => { res.status(500).json({ error: "something went terribly wrong deleting a list" }) });
+        })
+
+});
+
+router.put('/lists/protected', jwtAuth, jsonParser, (req, res) => {
+    let gifts = { gifts: req.body.gifts }
+    let list = req.body._id
 
     List
-        .findOneAndUpdate({ _id: req.body._id }, { $set: updatedGifts })
+        .findOneAndUpdate({ _id: list }, { $set: gifts })
         .then(response => { res.status(200).json({ message: "updated gift list" }) })
         .catch(err => res.status(500).json({ message: "Something went horribly wrong updating the gift list" }));
 });
