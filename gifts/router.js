@@ -31,7 +31,7 @@ router.get('/lists/protected', jwtAuth, (req, res) => {
         })
 });
 
-router.post('/gifts', jsonParser, (req, res) => {
+router.post('/gifts', jwtAuth, jsonParser, (req, res) => {
     const requiredFields = ['name', 'price', 'holiday', 'recipient', 'description', 'link', 'image']
     let newGift = {
         name: req.body.name,
