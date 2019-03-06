@@ -22,7 +22,7 @@ router.get('/lists/protected', jwtAuth, (req, res) => {
     User.findOne({ username: username })
         .then(user => {
             Account
-                .findOne({ user: user._id })
+                .findOne({ user: user._id }).populate({ path: 'lists', populate: { path: 'gifts' } })
                 .then(session => res.json(session))
                 .catch(err => {
                     console.error(err);
@@ -31,7 +31,7 @@ router.get('/lists/protected', jwtAuth, (req, res) => {
         })
 });
 
-router.post('/gifts', jwtAuth, jsonParser, (req, res) => {
+router.post('/gifts', jsonParser, (req, res) => {
     const requiredFields = ['name', 'price', 'holiday', 'recipient', 'description', 'link', 'image']
     let newGift = {
         name: req.body.name,
@@ -91,7 +91,7 @@ router.post('/lists/protected', jwtAuth, jsonParser, (req, res) => {
                     return account.save(function () { });
                 })
                 .then((savedAccount) => {
-                    res.status(201).json(newList)
+                    res.status(201).json(savedAccount)
                 })
                 .catch(err => {
                     console.error(err);
@@ -119,7 +119,7 @@ router.delete('/lists/protected', jwtAuth, jsonParser, (req, res) => {
                                 return acc
                             }, account.lists)
                             Account.findByIdAndUpdate(account.id, { lists: newLists })
-                                .then(response => { res.status(204).json({ message: "List seletion successful" }) })
+                                .then((response) => { res.status(204).json() })
                         })
                 })
                 .catch(err => { res.status(500).json({ error: "something went terribly wrong deleting a list" }) });
@@ -127,13 +127,35 @@ router.delete('/lists/protected', jwtAuth, jsonParser, (req, res) => {
 
 });
 
-router.put('/lists/protected', jwtAuth, jsonParser, (req, res) => {
-    let gifts = { gifts: req.body.gifts }
-    let list = req.body._id
+router.post('/giftsave/protected', jwtAuth, jsonParser, (req, res) => {
+    let gift = req.body.gift;
+    let list = req.body.list;
 
     List
-        .findOneAndUpdate({ _id: list }, { $set: gifts })
+        .findOne({ _id: list })
+        .then(list => {
+            list.gifts.push(gift)
+            return list.save(function () { });
+        })
         .then(response => { res.status(200).json({ message: "updated gift list" }) })
         .catch(err => res.status(500).json({ message: "Something went horribly wrong updating the gift list" }));
 });
+
+router.delete('/gifts/protected', jwtAuth, jsonParser, (req, res) => {
+    let gift = req.body.gift;
+    let list = req.body.list
+    List
+        .findOne({ _id: list })
+        .then(list => {
+            list.gifts.forEach((val, index) => {
+                if (list.gifts[index] == gift) {
+                    list.gifts.splice(index, 1)
+                };
+            });
+            return list.save(function () { });
+        })
+        .then(response => {res.status(204).json({message: "gift successfully deleted"})})
+        .catch(err => res.status(500).json({message: "Something went wrong with gift deletion"}));
+});
+
 module.exports = { router };
