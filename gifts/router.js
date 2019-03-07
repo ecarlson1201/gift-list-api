@@ -28,7 +28,35 @@ router.get('/lists/protected', jwtAuth, (req, res) => {
                     console.error(err);
                     res.status(500).json({ error: 'Something went wrong' });
                 });
+        });
+});
+
+router.post('/carousel', jsonParser, (req, res) => {
+    const holiday = req.body.holiday;
+    const recipient = req.body.recipient;
+
+    Gift
+        .find({ holiday: holiday })
+        .then(holidayGifts => {
+            Gift
+                .find({ recipient: recipient })
+                .then(recipientGifts => {
+                    res.json({
+                        holiday: {
+                            search: holiday,
+                            gifts: holidayGifts.slice(0, 4)
+                        },
+                        recipient: {
+                            search: recipient,
+                            gifts: recipientGifts.slice(0, 4)
+                        }
+                    })
+                })
         })
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ error: 'Something went wrong' });
+        });
 });
 
 router.post('/gifts', jsonParser, (req, res) => {
@@ -54,8 +82,8 @@ router.post('/gifts', jsonParser, (req, res) => {
 
     Gift
         .create(newGift)
-        .then(() => {
-            res.status(201).json(newGift)
+        .then((gift) => {
+            res.status(201).json(gift)
         })
         .catch(err => {
             console.error(err);
@@ -154,8 +182,8 @@ router.delete('/gifts/protected', jwtAuth, jsonParser, (req, res) => {
             });
             return list.save(function () { });
         })
-        .then(response => {res.status(204).json({message: "gift successfully deleted"})})
-        .catch(err => res.status(500).json({message: "Something went wrong with gift deletion"}));
+        .then(response => { res.status(204).json({ message: "gift successfully deleted" }) })
+        .catch(err => res.status(500).json({ message: "Something went wrong with gift deletion" }));
 });
 
 module.exports = { router };
