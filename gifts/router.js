@@ -184,7 +184,7 @@ router.post('/giftsave/protected', jwtAuth, jsonParser, (req, res) => {
         .catch(err => res.status(500).json({ message: "Something went horribly wrong updating the gift list" }));
 });
 
-router.delete('/gifts/protected', jwtAuth, jsonParser, (req, res) => {
+router.put('/gifts/protected', jwtAuth, jsonParser, (req, res) => {
     let gift = req.body.gift;
     let list = req.body.list
     List
