@@ -31,6 +31,21 @@ router.get('/lists/protected', jwtAuth, (req, res) => {
         });
 });
 
+router.post('/gifts/search', jsonParser, (req, res) => {
+    const search = req.body
+    Gift
+        .find(search)
+        .then(session => {
+            if (session[0] === undefined) {
+                res.json([{ name: "No Results Found" }])
+            } else { res.json(session) };
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ error: "Something went horribly wrong fetching search data" });
+        });
+});
+
 router.post('/carousel', jsonParser, (req, res) => {
     const holiday = req.body.holiday;
     const recipient = req.body.recipient;
