@@ -2,9 +2,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const passport = require('passport');
-const { Account, Gift, List } = require('../gifts/models')
+const { Account } = require('../gifts/models')
 const { User } = require('./models');
-const { router: authRouter } = require('../auth/router');
 const { localStrategy, jwtStrategy } = require('../auth/strategies')
 
 const router = express.Router();
@@ -28,7 +27,7 @@ router.post('/', jsonParser, (req, res) => {
       message: 'Missing field',
       location: missingField
     });
-  }
+  };
 
   const stringFields = ['username', 'password'];
   const nonStringField = stringFields.find(
@@ -42,7 +41,7 @@ router.post('/', jsonParser, (req, res) => {
       message: 'Incorrect field type: expected string',
       location: nonStringField
     });
-  }
+  };
 
   const explicityTrimmedFields = ['username', 'password'];
   const nonTrimmedField = explicityTrimmedFields.find(
@@ -56,7 +55,7 @@ router.post('/', jsonParser, (req, res) => {
       message: 'Cannot start or end with whitespace',
       location: nonTrimmedField
     });
-  }
+  };
 
   const sizedFields = {
     username: {
@@ -89,7 +88,7 @@ router.post('/', jsonParser, (req, res) => {
           .max} characters long`,
       location: tooSmallField || tooLargeField
     });
-  }
+  };
 
   let { username, password } = req.body;
 
@@ -103,7 +102,7 @@ router.post('/', jsonParser, (req, res) => {
           message: 'Username already taken',
           location: 'username'
         });
-      }
+      };
       return User.hashPassword(password);
     })
     .then(hash => {
@@ -113,7 +112,7 @@ router.post('/', jsonParser, (req, res) => {
       });
     })
     .then(user => {
-      userObj= user
+      userObj = user
       return Account.create({
         user: user.id,
         lists: []

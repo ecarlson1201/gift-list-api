@@ -5,7 +5,6 @@ const cors = require('cors');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const passport = require('passport');
-const bodyParser = require('body-parser');
 
 const { CLIENT_ORIGIN, DATABASE_URL, PORT } = require('./config');
 const { router: accountsRouter } = require('./gifts/router');

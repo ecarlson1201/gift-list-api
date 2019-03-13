@@ -6,7 +6,7 @@ mongoose.Promise = global.Promise;
 
 const expect = chai.expect;
 
-const { Account, Gift, List } = require('../gifts/models');
+const { Gift, List } = require('../gifts/models');
 const { User } = require('../user/models');
 const { app, runServer, closeServer } = require('../server');
 const { TEST_DATABASE_URL, JWT_SECRET, JWT_EXPIRY } = require('../config.js');
@@ -17,7 +17,7 @@ function generateUserData() {
   return {
     username: 'testuser',
     password: 'testpassword'
-  }
+  };
 };
 
 function generateAccountData() {
@@ -128,7 +128,7 @@ describe("Accounts API Resource", function () {
         .get('/api/accounts/lists/protected')
         .catch(err => {
           err.should.be.an.instanceOf(Error)
-        })
+        });
     });
   });
   describe('POST endpoint for /api/accounts/gifts', function () {

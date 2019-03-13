@@ -9,7 +9,6 @@ const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
 
 const { Account, Gift, List } = require('./models');
-const { router: authRouter } = require('../auth/router');
 const { localStrategy, jwtStrategy } = require('../auth/strategies');
 
 passport.use(localStrategy);
