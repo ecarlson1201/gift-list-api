@@ -362,47 +362,4 @@ describe("Accounts API Resource", function () {
         });
     });
   });
-  describe('DELETE endpoint for /api/accounts/lists/protected', function () {
-    let res;
-    it('Should delete specified list', function (done) {
-      return chai.request(app)
-        .delete('/api/accounts/lists/protected')
-        .set('authorization', `Bearer ${token}`)
-        .send({ _id: '5c38e5a557ab9000176ddbe8' })
-        .then(function (_res) {
-          res = _res;
-          expect(res).to.have.status(204)
-          done();
-        });
-    });
-  });
-  it('Should prevent deleting for unauthorized user', function () {
-    return chai.request(app)
-      .delete('/api/accounts/lists/protected')
-      .send({ _id: '5c38e5a557ab9000176ddbe8' })
-      .catch(err => {
-        err.should.be.an.instanceOf(Error)
-      });
-  });
-  describe('POST endpoint for /api/accounts/lists/protected', function () {
-    let res;
-    it.only('Should add list for authenticated user', function () {
-      return chai.request(app)
-        .post('/api/accounts/lists/protected')
-        .set('authorization', `Bearer ${token}`)
-        .send({ title: "Mom" })
-        .then(function (_res) {
-          res = _res;
-          expect(res).to.have.status(201)
-        });
-    });
-    it('Should prevent adding list for unauthorized user', function () {
-      return chai.request(app)
-        .post('/api/accounts/lists/protected')
-        .send({ title: "Mom" })
-        .catch(err => {
-          err.should.be.an.instanceOf(Error)
-        });
-    });
-  });
 });
