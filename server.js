@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const bodyParser = require('body-parser');
 
-const { CLIENT_ORIGIN, DATABASE_URL, TEST_DATABASE_URL, PORT } = require('./config');
+const { CLIENT_ORIGIN, DATABASE_URL, PORT } = require('./config');
 const { router: accountsRouter } = require('./gifts/router');
 const { router: userRouter } = require('./user/router');
 const { router: authRouter } = require('./auth/router');
